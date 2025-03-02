@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
-import { AwsNotifyCodepipelineEventsStack } from '../lib/aws-notify-codepipeline-events-stack';
+import { AwsNotifyCodePipelineEventsStack } from '../lib/aws-notify-codepipeline-events-stack';
 
 const app = new cdk.App();
-new AwsNotifyCodepipelineEventsStack(app, 'AwsNotifyCodepipelineEventsStack', {
+new AwsNotifyCodePipelineEventsStack(app, 'AwsNotifyCodepipelineEventsStack', {
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
    * but a single synthesized template can be deployed anywhere. */

@@ -1,0 +1,95 @@
+import { EmailNotifier } from "../notifications/EmailNotifier";
+import { EventHandler } from "./EventHandler";
+import { EventBridgeEvent } from 'aws-lambda';
+
+enum DetailTypes {
+  'EC2 Instance State-change Notification',
+  'On-Demand Capacity Reservation Billing Ownership Request Pending',
+  'On-Demand Capacity Reservation Billing Ownership Request Expired',
+  'On-Demand Capacity Reservation Billing Ownership Request Cancelled',
+  'On-Demand Capacity Reservation Billing Ownership Revoked',
+  'On-Demand Capacity Reservation Billing Ownership Request Accepted',
+  'On-Demand Capacity Reservation Billing Ownership Request Rejected',
+  'EC2 On-Demand Capacity Reservation Suspended',
+  'EC2 On-Demand Capacity Reservation Suspension Failed',
+  'EC2 On-Demand Capacity Reservation Unsuspended',
+  'EC2 On-Demand Capacity Reservation Unsuspension Failed',
+  'UltraCluster Capacity Reservation Approaching Expiry',
+  'UltraCluster Capacity Block Approaching Expiry',
+  'UltraCluster Capacity Block Reservation Approaching Expiry',
+  'Cluster Capacity Block Approaching Expiry',
+  'Cluster Capacity Block Reservation Approaching Expiry',
+  'UltraCluster Capacity Reservation Scheduled',
+  'UltraCluster Capacity Block Scheduled',
+  'UltraCluster Capacity Block Reservation Scheduled',
+  'Cluster Capacity Block Scheduled',
+  'Cluster Capacity Block Reservation Scheduled',
+  'UltraCluster Capacity Reservation Delivered',
+  'UltraCluster Capacity Block Delivered',
+  'UltraCluster Capacity Block Reservation Delivered',
+  'Cluster Capacity Block Delivered',
+  'Cluster Capacity Block Reservation Delivered',
+  'UltraCluster Capacity Reservation Expired',
+  'UltraCluster Capacity Block Expired',
+  'UltraCluster Capacity Block Reservation Expired',
+  'Cluster Capacity Block Expired',
+  'Cluster Capacity Block Reservation Expired',
+  'UltraCluster Capacity Reservation Approaching Delivery',
+  'UltraCluster Capacity Block Approaching Delivery',
+  'UltraCluster Capacity Block Reservation Approaching Delivery',
+  'Cluster Capacity Block Approaching Delivery',
+  'Cluster Capacity Block Reservation Approaching Delivery',
+  'Capacity Block Delivered',
+  'Capacity Block Expiration Warning',
+  'EC2 Capacity Reservation Scheduled',
+  'EC2 Capacity Reservation Active',
+  'EC2 Capacity Reservation Failed',
+  'EC2 Capacity Reservation Delayed',
+  'EC2 Capacity Reservation Expired',
+  'EC2 Capacity Reservation Unsupported',
+  'EC2 Capacity Reservation Cancelled',
+  'Future Capacity Request in Assessing',
+  'Future Capacity Request Scheduled',
+  'Future Capacity Request Unsupported',
+  'Future Capacity Request Delayed',
+  'Future Capacity Request Completed',
+  'Future Capacity Request Canceled',
+  'Future Capacity Request Failed',
+  'Future Capacity Specification Commitment Duration Update',
+  'Future Capacity Specification in Assessing',
+  'Future Capacity Specification Scheduled',
+  'Future Capacity Specification Unsupported',
+  'Future Capacity Specification Delayed',
+  'Future Capacity Specification Completed',
+  'Future Capacity Specification Canceled',
+  'Future Capacity Specification Failed',
+  'EBS Volume Notification',
+  'EBS Snapshot Notification',
+  'EBS Multi-Volume Snapshots Completion Status',
+  'EBS Snapshot Block Public Access Enabled',
+  'EBS Snapshot Block Public Access Disabled',
+  'EBS Copy Snapshot Missed Completion Duration',
+  'EC2 Spot Instance Interruption Warning',
+  'EC2 Spot Instance Request Fulfillment',
+  'EC2 Spot Instance Rebalance Recommended',
+  'EC2 Instance Rebalance Recommendation',
+  'EBS Snapshot Acceleration State-change Notification',
+  'EBS Fast Snapshot Restore State-change Notification',
+  'Launch Template Alias Change',
+  'EC2 AMI Available',
+  'EC2 AMI Failed',
+  'EC2 AMI State Change',
+  'EC2 Fast Launch State-change Notification',
+}
+
+export class EC2EventHandler<TDetailType extends string, TDetail> implements EventHandler<TDetailType, TDetail> {
+  private notifier = new EmailNotifier();
+
+  public async handle(event: EventBridgeEvent<TDetailType, TDetail>) {
+    const detailType = event["detail-type"];
+    if (detailType === DetailTypes["EC2 Instance State-change Notification"].toString()) {
+      console.log("Handling EC2 Event:", event);
+      await this.notifier.send(`EC2 Alert: ${event.detail}`);
+    }
+  }
+}
