@@ -1,0 +1,1 @@
+export const sourceInfoTable = 'arn:aws:dynamodb:ap-southeast-1:475174330998:table/BacklogWebhook-SourceInfo0626CB15-13B7BTP9YN7QL';

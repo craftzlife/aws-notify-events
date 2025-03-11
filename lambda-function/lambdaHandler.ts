@@ -1,13 +1,14 @@
 import { EventBridgeEvent } from "aws-lambda";
-import { EventHandlerFactory } from "./factories/LogHandlerFactory";
+import { EventHandlerFactory } from "./LogHandlerFactory";
 
 export async function handler(event: EventBridgeEvent<string, any>) {
-  const service: string = event.source; // Use event's source to determine the service
-  const logHandler = EventHandlerFactory.create(service);
+  try {
+    const detailType: string = event["detail-type"]; // Use event's detail-type to determine the handlers
+    const handler = EventHandlerFactory.getHandler(detailType);
 
-  if (logHandler) {
-    await logHandler.handle(event);
-  } else {
-    console.error("No handler found for service:", service);
+    await handler.handle(event);
+
+  } catch (error) {
+    console.error(error);
   }
 }

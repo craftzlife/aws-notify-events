@@ -1,9 +1,9 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import path = require('path');
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as configs from '../bin/app-configs';
 
-export class AwsNotifyCodePipelineEventsStack extends cdk.Stack {
+export class AwsNotifyEventStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
@@ -16,10 +16,11 @@ export class AwsNotifyCodePipelineEventsStack extends cdk.Stack {
       ]
     });
 
+    const sourceInfoTable = cdk.aws_dynamodb.Table.fromTableArn(this, 'SourceInfoTable', configs.sourceInfoTable);
     const lambda = new cdk.aws_lambda.Function(this, 'LambdaHandler', {
       runtime: cdk.aws_lambda.Runtime.NODEJS_22_X,
-      handler: 'dist/src/lambdaHandler.handler',
-      code: cdk.aws_lambda.Code.fromAsset(path.join(process.cwd(), '../EventHandler'), {
+      handler: 'dist/lambdaHandler.handler',
+      code: cdk.aws_lambda.Code.fromAsset(path.join(process.cwd(), '../lambda-function'), {
         bundling: {
           image: cdk.aws_lambda.Runtime.NODEJS_22_X.bundlingImage,
           network: 'host',
@@ -46,7 +47,7 @@ export class AwsNotifyCodePipelineEventsStack extends cdk.Stack {
       environment: {
         'DYNAMODB_BACKLOG_WEBHOOK_TABLE_NAME': sourceInfoTable.tableName,
       },
-      retryAttempts: 3,
+      retryAttempts: 2,
       logGroup: new cdk.aws_logs.LogGroup(this, 'LambdaHandlerLogGroup', {
         logGroupName: '/aws/lambda/codepipeline-event-notify',
         retention: cdk.aws_logs.RetentionDays.ONE_MONTH,
@@ -55,19 +56,39 @@ export class AwsNotifyCodePipelineEventsStack extends cdk.Stack {
       })
     });
 
+    // const event = new cdk.aws_events.Rule(this, 'EventRule', {
+    //   eventPattern: {
+    //     source: [
+    //       'aws.codepipeline'
+    //     ],
+    //     detailType: [
+    //       'CodePipeline Pipeline Execution State Change',
+    //       'CodePipeline Action Execution State Change',
+    //       'CodePipeline Stage Execution State Change',
+    //     ],
+    //     detail: {
+    //       state: ['CANCELED', 'FAILED', 'RESUMED', 'STARTED', 'STOPPED', 'SUCCEEDED', 'SUPERSEDED']
+    //     },
+    //   },
+    //   enabled: true,
+    //   targets: [
+    //     new cdk.aws_events_targets.LambdaFunction(lambda)
+    //   ]
+    // });
+
+    // Monitor events from CodePipeline and EC2 services
     const event = new cdk.aws_events.Rule(this, 'EventRule', {
       eventPattern: {
         source: [
-          'aws.codepipeline'
+          'aws.codepipeline',
+          'aws.ec2'
         ],
         detailType: [
           'CodePipeline Pipeline Execution State Change',
           'CodePipeline Action Execution State Change',
           'CodePipeline Stage Execution State Change',
+          'EC2 Instance State-change Notification'
         ],
-        detail: {
-          state: ['CANCELED', 'FAILED', 'RESUMED', 'STARTED', 'STOPPED', 'SUCCEEDED', 'SUPERSEDED']
-        },
       },
       enabled: true,
       targets: [
