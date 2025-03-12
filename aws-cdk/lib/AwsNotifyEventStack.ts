@@ -26,11 +26,12 @@ export class AwsNotifyEventStack extends cdk.Stack {
           network: 'host',
           user: 'root',
           command: [
-            'bash', '-c', [
+            '/bin/sh', '-c', [
+              'rm -rf /asset-input/dist /asset-input/node_modules',
+              'rm -rf /asset-output/*',
               'npm install --no-audit --no-fund',
               'npm run build',
               'npm prune --production',
-              'rm -rf /asset-output/*',
               'cp -r dist node_modules /asset-output',
             ].join(' && ')
           ],
